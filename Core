@@ -1,1 +1,120 @@
 
+local NexusUI = ...
+
+local Core = {}
+
+Core.Services = setmetatable({}, {
+    __index = function(self, name)
+        local service = game:GetService(name)
+        rawset(self, name, service)
+        return service
+    end
+})
+
+Core.Player = Core.Services.Players.LocalPlayer
+Core.Mouse = Core.Player:GetMouse()
+
+Core.ScreenGui = (function()
+    local success, gui = pcall(function()
+        return Core.Services.CoreGui
+    end)
+    return success and gui or Core.Player:WaitForChild("PlayerGui")
+end)()
+
+function Core.UID()
+    return Core.Services.HttpService:GenerateGUID(false):sub(1, 8)
+end
+
+function Core.New(class, props)
+    local inst = Instance.new(class)
+    if props then
+        for k, v in pairs(props) do
+            if k ~= "Parent" and k ~= "Children" then
+                local ok = pcall(function() inst[k] = v end)
+            end
+        end
+        if props.Children then
+            for _, child in ipairs(props.Children) do
+                child.Parent = inst
+            end
+        end
+        if props.Parent then
+            inst.Parent = props.Parent
+        end
+    end
+    return inst
+end
+
+function Core.Defer(fn, ...)
+    local args = {...}
+    task.defer(function()
+        fn(unpack(args))
+    end)
+end
+
+function Core.Delay(t, fn, ...)
+    local args = {...}
+    task.delay(t, function()
+        fn(unpack(args))
+    end)
+end
+
+function Core.Safe(fn, ...)
+    local ok, result = pcall(fn, ...)
+    return ok, result
+end
+
+function Core.Merge(a, b)
+    local result = {}
+    for k, v in pairs(a) do result[k] = v end
+    for k, v in pairs(b) do result[k] = v end
+    return result
+end
+
+function Core.DeepMerge(a, b)
+    local result = {}
+    for k, v in pairs(a) do
+        if type(v) == "table" then
+            result[k] = Core.DeepMerge(v, {})
+        else
+            result[k] = v
+        end
+    end
+    for k, v in pairs(b) do
+        if type(v) == "table" and type(result[k]) == "table" then
+            result[k] = Core.DeepMerge(result[k], v)
+        else
+            result[k] = v
+        end
+    end
+    return result
+end
+
+function Core.Clamp(v, min, max)
+    return math.max(min, math.min(max, v))
+end
+
+function Core.Lerp(a, b, t)
+    return a + (b - a) * t
+end
+
+function Core.LerpColor(c1, c2, t)
+    return Color3.new(
+        Core.Lerp(c1.R, c2.R, t),
+        Core.Lerp(c1.G, c2.G, t),
+        Core.Lerp(c1.B, c2.B, t)
+    )
+end
+
+function Core.Round(n, dec)
+    local m = 10 ^ (dec or 0)
+    return math.floor(n * m + 0.5) / m
+end
+
+function Core.TextSize(text, size, font, bounds)
+    return Core.Services.TextService:GetTextSize(
+        text, size, font, bounds or Vector2.new(math.huge, math.huge)
+    )
+end
+
+return Core
