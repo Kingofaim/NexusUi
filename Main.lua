@@ -6,7 +6,7 @@
     ╚═══════════════════════════════════════════════════════════════╝
     
     использование:
-    local NexusUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kingofaim/NexusUI/Main.lua"))()
+    local NexusUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kingofaim/NexusUI/main/Main.lua"))()
     
     local Window = NexusUI:CreateWindow({
         Title = "My Script",
